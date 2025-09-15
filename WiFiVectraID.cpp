@@ -7,11 +7,13 @@ WiFiVectraID::WiFiVectraID()
 
 void WiFiVectraID::begin(const char *apName, const char *apPassword)
 {
-    String ssid, password;
-    bool credentialsLoaded = loadWiFiCredentials(ssid, password);
+    String ssid, password, room;
+    bool credentialsLoaded = loadWiFiCredentials(ssid, password, room);
 
     WiFiManager wm;
-    wm.setSaveConfigCallback(saveWiFiManagerParamsCallback);
+
+    WiFiManagerParameter custom_room("room", "Room", room.c_str(), 32);
+    wm.addParameter(&custom_room);
 
     if (credentialsLoaded)
     {
@@ -27,7 +29,7 @@ void WiFiVectraID::begin(const char *apName, const char *apPassword)
 
         if (WiFi.status() != WL_CONNECTED)
         {
-            if (!wm.autoConnect(apName, apPassword))
+            if (!wm.startConfigPortal(apName, apPassword))
             {
                 ESP.restart();
             }
@@ -35,11 +37,18 @@ void WiFiVectraID::begin(const char *apName, const char *apPassword)
     }
     else
     {
-        if (!wm.autoConnect(apName, apPassword))
+        // if (!wm.autoConnect(apName, apPassword))
+        if (!wm.startConfigPortal(apName, apPassword))
         {
             ESP.restart();
         }
     }
+
+    room = custom_room.getValue();
+    _room = room;
+    _room.trim();  
+
+    saveWiFiCredentials(WiFi.SSID(), WiFi.psk(), room);
 }
 
 void WiFiVectraID::initLittleFS()
@@ -50,32 +59,42 @@ void WiFiVectraID::initLittleFS()
     }
 }
 
-void WiFiVectraID::saveWiFiCredentials(const String &ssid, const String &password)
+void WiFiVectraID::saveWiFiCredentials(const String &ssid, const String &password, const String &room)
 {
     File file = LittleFS.open(CONFIG_FILE, "w");
     if (!file)
         return;
+
     file.println(ssid);
     file.println(password);
+    file.println(room);
+
     file.close();
 }
 
-bool WiFiVectraID::loadWiFiCredentials(String &ssid, String &password)
+bool WiFiVectraID::loadWiFiCredentials(String &ssid, String &password, String &room)
 {
     File file = LittleFS.open(CONFIG_FILE, "r");
     if (!file)
         return false;
+
     ssid = file.readStringUntil('\n');
     ssid.trim();
     password = file.readStringUntil('\n');
     password.trim();
+    room = file.readStringUntil('\n');
+    room.trim();
+
     file.close();
+
+    _room = room;
+
     return (ssid.length() > 0);
 }
 
-void WiFiVectraID::saveWiFiManagerParamsCallback()
+String WiFiVectraID::getRoom()
 {
-    saveWiFiCredentials(WiFi.SSID(), WiFi.psk());
+    return _room;
 }
 
 void WiFiVectraID::deleteWiFiConfigFile()

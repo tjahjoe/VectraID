@@ -10,16 +10,17 @@ class WiFiVectraID
 {
 public:
     WiFiVectraID();
-    void begin(const char* apName, const char* apPassword);
+    void begin(const char *apName, const char *apPassword);
     void deleteWiFiConfigFile();
+    String getRoom();
 
 private:
     void initLittleFS();
-    static void saveWiFiManagerParamsCallback();
-    static void saveWiFiCredentials(const String &ssid, const String &password);
-    static bool loadWiFiCredentials(String &ssid, String &password);
+    void saveWiFiCredentials(const String &ssid, const String &password, const String &room);
+    bool loadWiFiCredentials(String &ssid, String &password, String &room);
 
     static constexpr const char *CONFIG_FILE = "/wifi_config.txt";
+    String _room;
 };
 
 #endif

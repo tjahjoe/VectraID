@@ -11,6 +11,7 @@ SensorVectraID sensor(5, DHT22);
 
 void setup() {
     Serial.begin(115200);
+    // wifiVectra.deleteWiFiConfigFile();
     wifiVectra.begin("VECTRAID", "12345678");
     sensor.begin();
     mqtt.connect();
@@ -30,6 +31,7 @@ void loop() {
     doc["temp"] = temp;
     doc["hum"]  = hum;
     doc["lux"]  = lux;
+    doc["room"] = wifiVectra.getRoom();
 
     char payload[128];
     serializeJson(doc, payload);
