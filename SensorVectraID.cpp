@@ -5,7 +5,8 @@ SensorVectraID::SensorVectraID(uint8_t dhtPin, uint8_t dhtType) : dht(dhtPin, dh
 void SensorVectraID::begin() {
     dht.begin();
 
-    Wire.begin();
+    // Wire.begin();
+    Wire.begin(21, 22);
     // if (lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE)) {
     //     bh1750Ready = true;
     // } else {

@@ -7,7 +7,7 @@
 class PubSubVectraID {
 public:
     PubSubVectraID(Client& netClient);
-    void connect();
+    void connect(const char *clientID);
     bool isConnected();
     void loop();
     void publish(const char* topic, const char* payload);  

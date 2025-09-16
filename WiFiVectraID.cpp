@@ -108,4 +108,6 @@ void WiFiVectraID::deleteWiFiConfigFile()
     {
         Serial.println("wifi_config.txt not found.");
     }
+    ESP.restart();
+
 }

@@ -4,41 +4,50 @@
 #include <PubSubVectraID.h>
 #include <SensorVectraID.h>
 
+const char* clientID = "vectra1";
+const char* topic = "vectra/id";
+
 WiFiVectraID wifiVectra;
 WiFiClient espClient;
 PubSubVectraID mqtt(espClient);
-SensorVectraID sensor(5, DHT22); 
+SensorVectraID sensor(5, DHT22);
 
 void setup() {
-    Serial.begin(115200);
-    // wifiVectra.deleteWiFiConfigFile();
-    wifiVectra.begin("VECTRAID", "12345678");
-    sensor.begin();
-    mqtt.connect();
+  Serial.begin(115200);
+//   wifiVectra.deleteWiFiConfigFile();
+  wifiVectra.begin("VECTRAID", "12345678");
+  sensor.begin();
+  mqtt.connect(clientID);
+  pinMode(12, INPUT_PULLUP);
 }
 
 void loop() {
-    if (!mqtt.isConnected()) {
-        mqtt.connect();
-    }
-    mqtt.loop();
+  if (digitalRead(12) == LOW) {
+    wifiVectra.deleteWiFiConfigFile();
+  }
 
-    float temp = sensor.readTemperature();
-    float hum  = sensor.readHumidity();
-    float lux  = sensor.readLightLevel();
+  if (!mqtt.isConnected()) {
+    mqtt.connect(clientID);
+  }
+  mqtt.loop();
 
-    StaticJsonDocument<128> doc;
-    doc["temp"] = temp;
-    doc["hum"]  = hum;
-    doc["lux"]  = lux;
-    doc["room"] = wifiVectra.getRoom();
+  float temp = sensor.readTemperature();
+  float hum = sensor.readHumidity();
+  float lux = sensor.readLightLevel();
 
-    char payload[128];
-    serializeJson(doc, payload);
+  StaticJsonDocument<128> doc;
+  doc["id"] = clientID;
+  doc["temp"] = temp;
+  doc["hum"] = hum;
+  doc["lux"] = lux;
+  doc["room"] = wifiVectra.getRoom();
 
-    mqtt.publish("vectra/id", payload);
+  char payload[128];
+  serializeJson(doc, payload);
 
-    Serial.println(payload);
+  mqtt.publish(topic, payload);
 
-    delay(5000);
+  Serial.println(payload);
+
+  delay(5000);
 }

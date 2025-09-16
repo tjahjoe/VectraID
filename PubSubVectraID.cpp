@@ -4,9 +4,9 @@ PubSubVectraID::PubSubVectraID(Client& netClient) : client(netClient) {
     client.setServer(MQTT_BROKER, MQTT_PORT);
 }
 
-void PubSubVectraID::connect() {
+void PubSubVectraID::connect(const char *clientID) {
     while (!client.connected()) {
-        String client_id = "vectra-" + String(random(0xffff), HEX);
+        String client_id = clientID;
         Serial.printf("Connecting as %s ...\n", client_id.c_str());
 
         // if (client.connect(client_id.c_str(), MQTT_USERNAME, MQTT_PASSWORD)) {
